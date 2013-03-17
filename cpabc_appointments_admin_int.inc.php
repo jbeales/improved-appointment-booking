@@ -39,15 +39,15 @@ if (cpabc_appointment_is_administrator() || $mycalendarrows[0]->conwer == $curre
   <h3 class='hndle' style="padding:5px;"><span>Calendar Configuration / Administration</span></h3>
   <div class="inside">
   
-   <link rel="stylesheet" type="text/css" href="<?php echo plugins_url('TDE_AppCalendar/all-css.css', __FILE__); ?>" />
-   <link rel="stylesheet" type="text/css" href="<?php echo plugins_url('TDE_AppCalendar/simpleeditor.css', __FILE__); ?>" />
-   <link rel="stylesheet" type="text/css" href="<?php echo plugins_url('TDE_AppCalendar/tabview.css', __FILE__); ?>" />
+   <link rel="stylesheet" type="text/css" href="<?php echo plugins_url('TDE_AppCalendar/all-css.css', CPABC_PLUGIN_FILE); ?>" />
+   <link rel="stylesheet" type="text/css" href="<?php echo plugins_url('TDE_AppCalendar/simpleeditor.css', CPABC_PLUGIN_FILE); ?>" />
+   <link rel="stylesheet" type="text/css" href="<?php echo plugins_url('TDE_AppCalendar/tabview.css', CPABC_PLUGIN_FILE); ?>" />
    <script>
    var pathCalendar = "<?php echo cpabc_appointment_get_site_url(); ?>";
    </script>
-   <script type="text/javascript" src="<?php echo plugins_url('TDE_AppCalendar/all-scripts.js', __FILE__); ?>"></script>
-   <script type="text/javascript" language="JavaScript" src="<?php echo plugins_url('TDE_AppCalendar/tabview.js', __FILE__); ?>"></script>
-   <script type="text/javascript" language="JavaScript" src="<?php echo plugins_url('TDE_AppCalendar/simpleeditor-beta-min.js', __FILE__); ?>"></script>
+   <script type="text/javascript" src="<?php echo plugins_url('TDE_AppCalendar/all-scripts.js', CPABC_PLUGIN_FILE); ?>"></script>
+   <script type="text/javascript" language="JavaScript" src="<?php echo plugins_url('TDE_AppCalendar/tabview.js', CPABC_PLUGIN_FILE); ?>"></script>
+   <script type="text/javascript" language="JavaScript" src="<?php echo plugins_url('TDE_AppCalendar/simpleeditor-beta-min.js', CPABC_PLUGIN_FILE); ?>"></script>
    
    <script>initAppCalendar("cal<?php echo CP_CALENDAR_ID; ?>","3","1","<?php echo CPABC_TDEAPP_DEFAULT_CALENDAR_LANGUAGE; ?>",{m1:"Please, select your appointment."});</script>
    
@@ -389,7 +389,7 @@ if (cpabc_appointment_is_administrator() || $mycalendarrows[0]->conwer == $curre
   <h3 class='hndle' style="padding:5px;"><span>Note</span></h3>
   <div class="inside">
    To insert the calendar booking form in a post/page, use the dedicated icon 
-   <?php print '<img hspace="5" src="'.plugins_url('/images/cpabc_apps.gif', __FILE__).'" alt="'.__('Insert CP Contact Form with Paypal').'" />';     ?>
+   <?php print '<img hspace="5" src="'.plugins_url('/images/cpabc_apps.gif', CPABC_PLUGIN_FILE).'" alt="'.__('Insert CP Contact Form with Paypal').'" />';     ?>
    which has been added to your Upload/Insert Menu, just below the title of your Post/Page.
    <br /><br />
   </div>
@@ -399,7 +399,8 @@ if (cpabc_appointment_is_administrator() || $mycalendarrows[0]->conwer == $curre
 </div> 
 
 
-<p class="submit"><input type="submit" name="submit" id="submit" class="button-primary" value="Save Changes"  /></p>
+<p class="submit"><input type="submit" name="submit" id="submit" class="button-primary" value="Save Changes"  /></p>
+
 
 [<a href="http://wordpress.dwbooster.com/contact-us" target="_blank">Request Custom Modifications</a>] | [<a href="http://wordpress.dwbooster.com/calendars/appointment-booking-calendar" target="_blank">Help</a>]
 </form>

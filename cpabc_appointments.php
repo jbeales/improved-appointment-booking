@@ -1,17 +1,45 @@
 <?php
 /*
-Plugin Name: Appointment Booking Calendar
-Plugin URI: http://wordpress.dwbooster.com/calendars/appointment-booking-calendar
-Description: This plugin allows you to easily insert appointments forms into your WP website.
-Version: 1.01
-Author: CodePeople.net
-Author URI: http://codepeople.net
+Plugin Name: Improved Appointment Booking Calendar
+Plugin URI: 
+Description: Improved Appointment Booking Calendar improves on Appointment Booking Calendar by CodePeople.net, ( http://wordpress.dwbooster.com/calendars/appointment-booking-calendar ).
+This plugin allows you to easily insert appointments forms into your WP website. Note: Cannot be installed as a must-use plugin, (if you don't know what this is you probably don't have to worry about it).
+Version: 1.1
+Author: John Beales
+Author URI: http://johnbeales.com
 License: GPL
+
+
+
+Filters: 
+cpabc_appointment_buffered_data :   Filters the "buffered data" that's saved 
+                                    when an appointment is first created, but 
+                                    before it's confirmed, (paid).
+cpabc_appointment_description :     Filters the appointment description that's 
+                                    saved after an appointment is confirmed, 
+                                    (paid). For free appointments, this happens
+                                    in the same pageload as 
+                                    cpabc_appointment_buffered_data.
+
+                                    One argument is passed to this function, a
+                                    database row of appointment data, (including
+                                    the buffered data as $arg->buffered_date, 
+                                    (yes that's a spelling error).
+
+Actions:
+
+cpabc_end_of_form :                 Runs at the end of the main part of the book
+                                    appointment form, but before the CAPTCHA.
+
+
 */
+
+// using this instead of __FILE__ with plugins_url lets us symlink the plugin's directory without any trouble
+define('CPABC_PLUGIN_FILE', WP_PLUGIN_DIR . '/' . basename(dirname(__FILE__)) . '/' . basename(__FILE__));
+
 
 
 /* initialization / install / uninstall functions */
-
 
 define('CPABC_APPOINTMENTS_DEFAULT_CALENDAR_LANGUAGE', 'EN');
 define('CPABC_APPOINTMENTS_DEFAULT_CALENDAR_DATEFORMAT', '0');
@@ -108,8 +136,8 @@ define('CPABC_TDEAPP_DEFAULT_dexcv_text_enter_valid_captcha', 'Please enter a va
 
 
 
-register_activation_hook(__FILE__,'cpabc_appointments_install');
-register_deactivation_hook( __FILE__, 'cpabc_appointments_remove' );
+register_activation_hook(CPABC_PLUGIN_FILE,'cpabc_appointments_install');
+register_deactivation_hook( CPABC_PLUGIN_FILE, 'cpabc_appointments_remove' );
 
 function cpabc_appointments_install($networkwide)  {
 	global $wpdb;
@@ -306,7 +334,7 @@ function cpabc_appointments_get_public_form() {
     
     ?>
 </p> <!-- this p tag fixes a IE bug -->
-<link rel="stylesheet" type="text/css" href="<?php echo plugins_url('TDE_AppCalendar/all-css.css', __FILE__); ?>" />
+<link rel="stylesheet" type="text/css" href="<?php echo plugins_url('TDE_AppCalendar/all-css.css', CPABC_PLUGIN_FILE); ?>" />
 <script>
 var pathCalendar = "<?php echo cpabc_appointment_get_site_url(); ?>";
 var cpabc_global_date_format = '<?php echo cpabc_get_option('calendar_dateformat', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_DATEFORMAT); ?>';
@@ -315,7 +343,7 @@ var cpabc_global_start_weekday = '<?php echo cpabc_get_option('calendar_weekday'
 var cpabc_global_mindate = '<?php $value = cpabc_get_option('calendar_mindate', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_MINDATE); if ($value != '') echo date("n/j/Y", strtotime($value)); ?>';
 var cpabc_global_maxdate = '<?php $value = cpabc_get_option('calendar_maxdate', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_MAXDATE); if ($value != '') echo date("n/j/Y",strtotime($value)); ?>';
 </script>
-<script type="text/javascript" src="<?php echo plugins_url('TDE_AppCalendar/all-scripts.js', __FILE__); ?>"></script>
+<script type="text/javascript" src="<?php echo plugins_url('TDE_AppCalendar/all-scripts.js', CPABC_PLUGIN_FILE); ?>"></script>
 <script type="text/javascript">
  var cpabc_current_calendar_item;
  function cpabc_updateItem()
@@ -368,7 +396,14 @@ var cpabc_global_maxdate = '<?php $value = cpabc_get_option('calendar_maxdate', 
  </script>
     <?php
     define('CPABC_AUTH_INCLUDE', true);
-    @include dirname( __FILE__ ) . '/cpabc_scheduler.inc.php';    
+
+    $template_file = locate_template('cpabc_scheduler.inc.php', false, false);
+    if( '' == $template_file ) {
+        include dirname( CPABC_PLUGIN_FILE ) . '/cpabc_scheduler.inc.php';    
+    } else {
+        include $template_file;
+    }
+    
 }
 
 
@@ -387,7 +422,7 @@ if ( is_admin() ) {
     add_action('admin_enqueue_scripts', 'set_cpabc_apps_insert_adminScripts', 1);
     add_action('admin_menu', 'cpabc_appointments_admin_menu');
 
-    $plugin = plugin_basename(__FILE__);
+    $plugin = plugin_basename(CPABC_PLUGIN_FILE);
     add_filter("plugin_action_links_".$plugin, 'cpabc_customAdjustmentsLink');
     add_filter("plugin_action_links_".$plugin, 'cpabc_settingsLink');
     add_filter("plugin_action_links_".$plugin, 'cpabc_helpLink');
@@ -425,12 +460,12 @@ function cpabc_appointments_html_post_page() {
     if ($_GET["cal"] != '')
     {
         if ($_GET["list"] == '1')
-            @include_once dirname( __FILE__ ) . '/cpabc_appointments_admin_int_bookings_list.inc.php';
+            include_once dirname( CPABC_PLUGIN_FILE ) . '/cpabc_appointments_admin_int_bookings_list.inc.php';
         else
-            @include_once dirname( __FILE__ ) . '/cpabc_appointments_admin_int.inc.php';
+            include_once dirname( CPABC_PLUGIN_FILE ) . '/cpabc_appointments_admin_int.inc.php';
     }
     else
-        @include_once dirname( __FILE__ ) . '/cpabc_appointments_admin_int_calendar_list.inc.php';
+        include_once dirname( CPABC_PLUGIN_FILE ) . '/cpabc_appointments_admin_int_calendar_list.inc.php';
 }
 
 function set_cpabc_apps_insert_button() {
@@ -473,7 +508,7 @@ function set_cpabc_apps_insert_button() {
      </script>
     <?php
 
-    print '<a href="javascript:cpabc_appointments_fpanel.open()" title="'.__('Insert Appointment Booking Calendar').'"><img hspace="5" src="'.plugins_url('/images/cpabc_apps.gif', __FILE__).'" alt="'.__('Insert  Appointment Booking Calendar').'" /></a>';
+    print '<a href="javascript:cpabc_appointments_fpanel.open()" title="'.__('Insert Appointment Booking Calendar').'"><img hspace="5" src="'.plugins_url('/images/cpabc_apps.gif', CPABC_PLUGIN_FILE).'" alt="'.__('Insert  Appointment Booking Calendar').'" /></a>';
 }
 
 function set_cpabc_apps_insert_adminScripts($hook) {
@@ -564,7 +599,7 @@ function cpabc_appointments_check_posted_data()
             
         if ($_GET["cpabc_app"] == 'captcha')
         {
-            @include_once dirname( __FILE__ ) . '/captcha/captcha.php';            
+            @include_once dirname( CPABC_PLUGIN_FILE ) . '/captcha/captcha.php';            
             exit;
         }
 
@@ -642,6 +677,8 @@ function cpabc_appointments_check_posted_data()
             ($_POST["services"]?"\nService:".trim($services_formatted[1])."\n":"").
             ($coupon?"\nCoupon code:".$coupon->code.$discount_note."\n":"").
     "*-*\n";
+
+    $buffer = apply_filters('cpabc_appointment_buffered_data');
 
 
 
@@ -824,6 +861,8 @@ function cpabc_process_ready_to_go_appointment($itemnumber, $payer_email = "")
                   $myrows[0]->email."\n".
                   $myrows[0]->phone."\n".
                   $myrows[0]->question."\n";
+
+   $information = apply_filters('cpabc_appointment_description', $information, $myrows[0]);
 
    $email_content1 = str_replace("%INFORMATION%", $information, $email_content1);
    $email_content2 = str_replace("%INFORMATION%", $information, $email_content2);
