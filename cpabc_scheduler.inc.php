@@ -16,17 +16,17 @@
  setInterval('updatedate()',200);
  function doValidate(form)
  {
-    if (form.phone.value == '')
+    if (form.cpabc_phone.value == '')
     {
         alert('<?php _e('Please enter a valid phone number'); ?>.');
         return false;
     }
-    if (form.email.value == '')
+    if (form.cpabc_email.value == '')
     {
         alert('<?php _e('Please enter a valid email address'); ?>.');
         return false;
     }
-    if (form.name.value == '')
+    if (form.cpabc_name.value == '')
     {
         alert('<?php _e('Please write your name'); ?>.');
         return false;
@@ -36,7 +36,7 @@
         alert('<?php _e('Please select date and time'); ?>.');
         return false;
     }
-    <?php if (cpabc_get_option('dexcv_enable_captcha', CPABC_TDEAPP_DEFAULT_dexcv_enable_captcha) != 'false') { ?> if (form.hdcaptcha.value == '')
+    <?php if (cpabc_get_option('dexcv_enable_captcha', CPABC_TDEAPP_DEFAULT_dexcv_enable_captcha) != 'false') { ?> if (form.cpabc_hdcaptcha.value == '')
     {
         alert('<?php _e('Please enter the captcha verification code'); ?>.');
         return false;
@@ -45,12 +45,12 @@
     $dexQuery = jQuery.noConflict();
     var result = $dexQuery.ajax({
         type: "GET",
-        url: "<?php echo cpabc_appointment_get_site_url(); ?>?hdcaptcha="+form.hdcaptcha.value,
+        url: "<?php echo cpabc_appointment_get_site_url(); ?>?cpabc_hdcaptcha="+form.cpabc_hdcaptcha.value,
         async: false,
     }).responseText;
     if (result == "captchafailed")
     {
-        $dexQuery("#captchaimg").attr('src', $dexQuery("#captchaimg").attr('src')+'&'+Date());
+        $dexQuery("#cpabc_captchaimg").attr('src', $dexQuery("#cpabc_captchaimg").attr('src')+'&'+Date());
         alert('Incorrect captcha code. Please try again.');
         return false;
     }
@@ -62,16 +62,16 @@
 
 
 <p><label for="cpabc_phone"><?php _e( 'Your phone number:', 'cpabc' ); ?></label>
-<input type="text" name="phone" value=""></p>
+<input type="text" name="cpabc_phone" id="cpabc_phone" value=""></p>
 
 <p><label for="cpabc_name"><?php _e( 'Your name:', 'cpabc' ); ?></label>
-<input type="text" name="name" value=""></p>
+<input type="text" name="cpabc_name" id="cpabc_name" value=""></p>
 
 <p><label for="cpabc_email"><?php _e( 'Your email:', 'cpabc' ); ?></label>
-<input type="text" name="email" value=""></p>
+<input type="text" name="cpabc_email" id="cpabc_email" value=""></p>
 
 <p><label for="cpabc_question"><?php _e( 'Comments/Questions:', 'cpabc' ); ?></label>
-<textarea name="question" cols="40" rows="8"></textarea></p>
+<textarea name="cpabc_question" id="cpabc_question" cols="40" rows="8"></textarea></p>
 
 <?php      
 if ( count( $codes ) ) {
@@ -81,7 +81,7 @@ if ( count( $codes ) ) {
 
 if ( $cpabc_buffer != '' ) {
   echo '<p><label for="cpabc_services">' . __( 'Service: ', 'cpabc' ) . '</label>';
-  echo '<select name="services">'.$cpabc_buffer.'</select></p>';
+  echo '<select name="cpabc_services" id="cpabc_services">'.$cpabc_buffer.'</select></p>';
 }
 
 ?>
@@ -91,11 +91,11 @@ if ( $cpabc_buffer != '' ) {
 <?php if (cpabc_get_option('dexcv_enable_captcha', CPABC_TDEAPP_DEFAULT_dexcv_enable_captcha) != 'false') { ?>
   <p>
     <?php _e( 'Please enter the security code:', 'cpabc' ); ?><br />
-  <img src="<?php echo cpabc_appointment_get_site_url().'/?cpabc_app=captcha&width='.cpabc_get_option('dexcv_width', CPABC_TDEAPP_DEFAULT_dexcv_width).'&height='.cpabc_get_option('dexcv_height', CPABC_TDEAPP_DEFAULT_dexcv_height).'&letter_count='.cpabc_get_option('dexcv_chars', CPABC_TDEAPP_DEFAULT_dexcv_chars).'&min_size='.cpabc_get_option('dexcv_min_font_size', CPABC_TDEAPP_DEFAULT_dexcv_min_font_size).'&max_size='.cpabc_get_option('dexcv_max_font_size', CPABC_TDEAPP_DEFAULT_dexcv_max_font_size).'&noise='.cpabc_get_option('dexcv_noise', CPABC_TDEAPP_DEFAULT_dexcv_noise).'&noiselength='.cpabc_get_option('dexcv_noise_length', CPABC_TDEAPP_DEFAULT_dexcv_noise_length).'&bcolor='.cpabc_get_option('dexcv_background', CPABC_TDEAPP_DEFAULT_dexcv_background).'&border='.cpabc_get_option('dexcv_border', CPABC_TDEAPP_DEFAULT_dexcv_border).'&font='.cpabc_get_option('dexcv_font', CPABC_TDEAPP_DEFAULT_dexcv_font); ?>"  id="captchaimg" alt="security code" border="0"  />
+  <img src="<?php echo cpabc_appointment_get_site_url().'/?cpabc_app=captcha&width='.cpabc_get_option('dexcv_width', CPABC_TDEAPP_DEFAULT_dexcv_width).'&height='.cpabc_get_option('dexcv_height', CPABC_TDEAPP_DEFAULT_dexcv_height).'&letter_count='.cpabc_get_option('dexcv_chars', CPABC_TDEAPP_DEFAULT_dexcv_chars).'&min_size='.cpabc_get_option('dexcv_min_font_size', CPABC_TDEAPP_DEFAULT_dexcv_min_font_size).'&max_size='.cpabc_get_option('dexcv_max_font_size', CPABC_TDEAPP_DEFAULT_dexcv_max_font_size).'&noise='.cpabc_get_option('dexcv_noise', CPABC_TDEAPP_DEFAULT_dexcv_noise).'&noiselength='.cpabc_get_option('dexcv_noise_length', CPABC_TDEAPP_DEFAULT_dexcv_noise_length).'&bcolor='.cpabc_get_option('dexcv_background', CPABC_TDEAPP_DEFAULT_dexcv_background).'&border='.cpabc_get_option('dexcv_border', CPABC_TDEAPP_DEFAULT_dexcv_border).'&font='.cpabc_get_option('dexcv_font', CPABC_TDEAPP_DEFAULT_dexcv_font); ?>"  id="cpabc_captchaimg" alt="security code" border="0"  />
   </p>
-  <label for="hdcaptcha"><?php _e( 'Security Code (lowercase letters):', 'cpabc' ); ?></label>
+  <label for="cpabc_hdcaptcha"><?php _e( 'Security Code (lowercase letters):', 'cpabc' ); ?></label>
   <div class="dfield">
-  <input type="text" size="20" name="hdcaptcha" id="hdcaptcha" value="" />
+  <input type="text" size="20" name="cpabc_hdcaptcha" id="cpabc_hdcaptcha" value="" />
   <div class="error message" id="hdcaptcha_error" generated="true" style="display:none;position: absolute; left: 0px; top: 25px;"></div>
   </div>
   <br />

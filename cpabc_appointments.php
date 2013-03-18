@@ -615,17 +615,17 @@ function cpabc_appointments_check_posted_data()
 
     // if this isn't the expected post and isn't the captcha verification then nothing to do
 	if ( 'POST' != $_SERVER['REQUEST_METHOD'] || ! isset( $_POST['cpabc_appointments_post'] ) )
-		if ( 'GET' != $_SERVER['REQUEST_METHOD'] || !isset( $_GET['hdcaptcha'] ) )
+		if ( 'GET' != $_SERVER['REQUEST_METHOD'] || !isset( $_GET['cpabc_hdcaptcha'] ) )
 		    return;
 
     if (!defined('CP_CALENDAR_ID'))
         define ('CP_CALENDAR_ID',$_POST["cpabc_item"]);
 
     session_start();
-    if ($_GET['hdcaptcha'] == '') $_GET['hdcaptcha'] = $_POST['hdcaptcha'];
+    if ($_GET['cpabc_hdcaptcha'] == '') $_GET['cpabc_hdcaptcha'] = $_POST['cpabc_hdcaptcha'];
     if (
            (cpabc_get_option('dexcv_enable_captcha', CPABC_TDEAPP_DEFAULT_dexcv_enable_captcha) != 'false') &&
-           ( ($_GET['hdcaptcha'] != $_SESSION['rand_code']) ||
+           ( ($_GET['cpabc_hdcaptcha'] != $_SESSION['rand_code']) ||
              ($_SESSION['rand_code'] == '')
            )
        )
@@ -653,13 +653,13 @@ function cpabc_appointments_check_posted_data()
     if (cpabc_get_option('calendar_dateformat', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_DATEFORMAT) == '0') $format = "m/d/Y ".$format; else $format = "d/m/Y ".$format;
     $_POST["Date"] = date($format,strtotime($_POST["dateAndTime"]));
 
-    $services_formatted = explode("|",$_POST["services"]);
+    $services_formatted = explode("|",$_POST["cpabc_services"]);
 
-    $price = ($_POST["services"]?trim($services_formatted[0]):cpabc_get_option('request_cost', CPABC_APPOINTMENTS_DEFAULT_COST));
+    $price = ($_POST["cpabc_services"]?trim($services_formatted[0]):cpabc_get_option('request_cost', CPABC_APPOINTMENTS_DEFAULT_COST));
 
     $discount_note = "";
     $coupon = false;
-    $codes = $wpdb->get_results( "SELECT * FROM ".CPABC_APPOINTMENTS_DISCOUNT_CODES_TABLE_NAME." WHERE code='".$wpdb->escape($_POST["couponcode"])."' AND expires>='".date("Y-m-d")." 00:00:00' AND `cal_id`=".CP_CALENDAR_ID);
+    $codes = $wpdb->get_results( "SELECT * FROM ".CPABC_APPOINTMENTS_DISCOUNT_CODES_TABLE_NAME." WHERE code='".$wpdb->escape($_POST["cpabc_couponcode"])."' AND expires>='".date("Y-m-d")." 00:00:00' AND `cal_id`=".CP_CALENDAR_ID);
     if (count($codes))
     {
         $coupon = $codes[0];
@@ -670,11 +670,11 @@ function cpabc_appointments_check_posted_data()
 
     $buffer = $_POST["selYearcal".$selectedCalendar].",".$_POST["selMonthcal".$selectedCalendar].",".$_POST["selDaycal".$selectedCalendar]."\n".
     $_POST["selHourcal".$selectedCalendar].":".($_POST["selMinutecal".$selectedCalendar]<10?"0":"").$_POST["selMinutecal".$selectedCalendar]."\n".
-    "Name: ".$_POST["name"]."\n".
-    "Email: ".$_POST["email"]."\n".
-    "Phone: ".$_POST["phone"]."\n".
-    "Question: ".$_POST["question"]."\n".
-            ($_POST["services"]?"\nService:".trim($services_formatted[1])."\n":"").
+    "Name: ".$_POST["cpabc_name"]."\n".
+    "Email: ".$_POST["cpabc_email"]."\n".
+    "Phone: ".$_POST["cpabc_phone"]."\n".
+    "Question: ".$_POST["cpabc_question"]."\n".
+            ($_POST["cpabc_services"]?"\nService:".trim($services_formatted[1])."\n":"").
             ($coupon?"\nCoupon code:".$coupon->code.$discount_note."\n":"").
     "*-*\n";
 
@@ -686,11 +686,11 @@ function cpabc_appointments_check_posted_data()
                                                                         'time' => current_time('mysql'),
                                                                         'booked_time' => $_POST["Date"],
                                                                         'booked_time_unformatted' => $_POST["dateAndTime"],
-                                                                        'name' => $_POST["name"],
-                                                                        'email' => $_POST["email"],
-                                                                        'phone' => $_POST["phone"],
-                                                                        'question' => $_POST["question"]
-                                                                           .($_POST["services"]?"\nService:".trim($services_formatted[1]):"")
+                                                                        'name' => $_POST["cpabc_name"],
+                                                                        'email' => $_POST["cpabc_email"],
+                                                                        'phone' => $_POST["cpabc_phone"],
+                                                                        'question' => $_POST["cpabc_question"]
+                                                                           .($_POST["cpabc_services"]?"\nService:".trim($services_formatted[1]):"")
                                                                            .($coupon?"\nCoupon code:".$coupon->code.$discount_note:"")
                                                                            ,
                                                                         'buffered_date' => $buffer
@@ -718,7 +718,7 @@ function cpabc_appointments_check_posted_data()
 <form action="https://www.paypal.com/cgi-bin/webscr" name="ppform3" method="post">
 <input type="hidden" name="cmd" value="_xclick" />
 <input type="hidden" name="business" value="<?php echo cpabc_get_option('paypal_email', CPABC_APPOINTMENTS_DEFAULT_PAYPAL_EMAIL); ?>" />
-<input type="hidden" name="item_name" value="<?php echo cpabc_get_option('paypal_product_name', CPABC_APPOINTMENTS_DEFAULT_PRODUCT_NAME).($_POST["services"]?": ".trim($services_formatted[1]):"").$discount_note; ?>" />
+<input type="hidden" name="item_name" value="<?php echo cpabc_get_option('paypal_product_name', CPABC_APPOINTMENTS_DEFAULT_PRODUCT_NAME).($_POST["cpabc_services"]?": ".trim($services_formatted[1]):"").$discount_note; ?>" />
 <input type="hidden" name="item_number" value="<?php echo $item_number; ?>" />
 <input type="hidden" name="amount" value="<?php echo $price; ?>" />
 <input type="hidden" name="page_style" value="Primary" />
