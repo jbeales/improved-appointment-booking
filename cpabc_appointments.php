@@ -423,7 +423,6 @@ if ( is_admin() ) {
     add_action('admin_menu', 'cpabc_appointments_admin_menu');
 
     $plugin = plugin_basename(CPABC_PLUGIN_FILE);
-    add_filter("plugin_action_links_".$plugin, 'cpabc_customAdjustmentsLink');
     add_filter("plugin_action_links_".$plugin, 'cpabc_settingsLink');
     add_filter("plugin_action_links_".$plugin, 'cpabc_helpLink');
 
@@ -447,12 +446,6 @@ function cpabc_settingsLink($links) {
 function cpabc_helpLink($links) {
     $help_link = '<a href="http://wordpress.dwbooster.com/calendars/appointment-booking-calendar">'.__('Help').'</a>';
 	array_unshift($links, $help_link);
-	return $links;
-}
-
-function cpabc_customAdjustmentsLink($links) {
-    $customAdjustments_link = '<a href="http://wordpress.dwbooster.com/contact-us">'.__('Request custom changes').'</a>';
-	array_unshift($links, $customAdjustments_link);
 	return $links;
 }
 
