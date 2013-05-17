@@ -9,3 +9,7 @@
 * Improve JS form validation in cpabc_scheduler, (match E-mail better, for one)
 * Add some login or password or something to the iCal feed
 * Remove "Custom Mods" link from the calendar list page
+
+# Future Improvements
+
+* Show a warning when an admin blocks off/restricts a date that already has appointments booked.
