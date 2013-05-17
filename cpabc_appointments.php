@@ -1013,6 +1013,11 @@ function cpabc_appointments_calendar_load2() {
     ob_end_clean();
     header("Cache-Control: no-store, no-cache, must-revalidate");
     header("Pragma: no-cache");
+
+    // @TODO: Only send future events, otherwise this XHR will get huge eventually.
+    // @TODO: (Long-Term): Don't send a list of events, send a list of when things are available or not.
+    // @TODO: (Long-Term): Can the HTML5 date/time picker be used? Is it possible to block off dates/times in it?
+
     $calid = str_replace  (CPABC_TDEAPP_CAL_PREFIX, "",$_GET["id"]);
     $query = "SELECT * FROM ".CPABC_TDEAPP_CALENDAR_DATA_TABLE." where ".CPABC_TDEAPP_DATA_IDCALENDAR."='".$calid."'";
     $row_array = $wpdb->get_results($query,ARRAY_A);
@@ -1025,8 +1030,14 @@ function cpabc_appointments_calendar_load2() {
 
         echo intval($d1[0]).",".intval($d1[1]).",".intval($d1[2])."\n";
         echo intval($d2[0]).":".($d2[1])."\n";
-        echo $row[CPABC_TDEAPP_DATA_TITLE]."\n";
-        echo $row[CPABC_TDEAPP_DATA_DESCRIPTION]."\n*-*\n";
+
+        // DO NOT send private user data publicly, even if this IS an XHR.
+        if( current_user_can( 'manage_options' ) ) {
+            echo $row[CPABC_TDEAPP_DATA_TITLE]."\n";
+            echo $row[CPABC_TDEAPP_DATA_DESCRIPTION];
+        }
+
+        echo "\n*-*\n";
     }
 
     exit();
