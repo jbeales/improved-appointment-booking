@@ -4,10 +4,12 @@ Plugin Name: Improved Appointment Booking Calendar
 Plugin URI: 
 Description: Improved Appointment Booking Calendar improves on Appointment Booking Calendar by CodePeople.net, ( http://wordpress.dwbooster.com/calendars/appointment-booking-calendar ).
 This plugin allows you to easily insert appointments forms into your WP website. Note: Cannot be installed as a must-use plugin, (if you don't know what this is you probably don't have to worry about it).
+Requires PHP 5.2, (DateTime)
 Version: 1.1
 Author: John Beales
 Author URI: http://johnbeales.com
 License: GPL
+
 
 
 
@@ -1167,6 +1169,124 @@ function cpabc_get_option ($field, $default_value)
 function cpabc_appointment_is_administrator()
 {
     return current_user_can('manage_options');
+}
+
+
+function cpabc_is_date_restricted($datetime) {
+
+
+
+}
+
+
+
+/**
+ * Gets the availability on the date specified by $date
+ * @param  int $date    A unix timestamp on the date you're interested in.
+ * @return array        An associative array of appointment times and how many 
+ *                      slots are available at that time.
+ *
+ *                      eg. array ( 8:10 => 2, 11:30 => 1, 14:5:3 )
+ *                      Note: Neither hours nor minutes have leading zeros.
+ */
+function cpabc_get_availability_on($date) {
+
+    // @TODO: Make this per-calendar? Right now this is handled by the calendar
+    // @TODO: Cache this?
+    // 
+    // ID set in cpabc_get_option();
+
+    // date should be a unix timestamp?
+    $tz = new DateTimeZone( get_option( 'timezone_string' ) );
+    $date = new DateTime( $date, $tz );
+    $date_str = $date->format( 'n/j/Y' );
+    $now = new DateTime( time(), $tz );
+
+    // is this date in the past?
+    if($date < $now) {
+        return false;
+    }
+    
+    // is this date a restricted date?
+    $restricted_dates = cpabc_get_option( 'restrictedDates' );
+    $restricted_dates = explode( ',', $restricted_dates );
+    foreach( $restricted_dates as $rdate ) {
+        if( $rdate == $date_str ) {
+            return false;
+        }
+    }
+
+     
+    // is this date on a day of the week we accept appointments?
+    $weekday = $date->format( 'w' ); // weekday, 0-6
+    $workdays = cpabc_get_option( 'workingDates' );
+    $workdays = explode(',', $workdays );
+    if( ! in_array( $weekkday, $workdays ) ) {
+        return false;
+    }
+
+    // is this date before the min date?
+    $mindate = cpabc_get_option( 'calendar_mindate' ); // string, could be anything.
+    if( ! empty( $mindate ) ) {
+        // see if this works. It seems that we should be able to construct a new
+        // datetime from anything strtotime() can handle.
+        $mindate = new DateTime( $mindate, $tz );
+        if( $mindate > $date ) {
+            return false;
+        }
+    }
+
+    // is this date after the max date?
+    $maxdate = cpabc_get_option( 'calendar_maxdate' );
+    if( ! empty( $maxdate ) ) {
+        // see if this works. It seems that we should be able to construct a new
+        // datetime from anything strtotime() can handle.
+        $maxdate = new DateTime( $maxdate, $tz );
+        if( $maxdate < $date ) {
+            return false;
+        }
+    }
+
+
+    // well then, let's compute the availability
+    // @TODO: See if this is affected by changing the week start setting
+    $availablity_src = cpabc_get_option( 'timeWorkingDates' . $weekday ); // eg. timeWorkingDates2 (Tuesday)
+
+    // make an array of appointment times & capacities, then decrement 
+    // capacities based on already-booked appointments
+    $availability_src = explode( ',', $availability_src );
+    $availability = array();
+    foreach( $availability as $block ) {
+        $divider = strrpos( $block, ':' );
+        $time = substr( $block, 0, $divider );
+        $capacity = intval( substr( $block, $divider + 1) );
+
+        $availability[ $time ] = $capacity;
+    }
+
+    // now we've got the full list of appointments, let's subtract existing appointments from them.
+    
+    global $wpdb;
+    $appointments = $wpdb->get_results( 
+        $wpdb->prepare( 
+            'SELECT * FROM ' . CPABC_APPOINTMENTS_CALENDARS_TABLE_NAME . ' WHERE appointment_calendar_id=%d AND DATE(datatime)=%s',
+            CP_CALENDAR_ID,
+            $date->format( 'Y-m-d' )
+        )
+    );
+
+    foreach( $appointments as $appointment ) {
+        $appointment_ts = mysql2date('U', $appointment->datatime);
+        $appointment_time = date( 'G', $appointment_ts ) . ':' . intval( date( 'i', $appointment_ts ) );
+
+        if( isset( $availability[ $appointment_time ] ) ) {
+            $availability[ $appointment_time ] = $availability[ $appointment_time ] - 1;
+        }
+    }
+
+    return $availability;
+
+
 }
 
 
