@@ -1,3 +1,12 @@
+# Improved Appointment Booking Calendar
+
+## Requirements
+
+* WordPress, (something recent)
+* PHP 5.2 (for some DateTime functions)
+
+
+
 # Current To-Do list
 ### (This is by no means complete, just what I've noticed and don't want to forget)
 
