@@ -13,9 +13,12 @@ global $wpdb;
 $mycalendarrows = $wpdb->get_results( 'SELECT * FROM '.CPABC_APPOINTMENTS_CONFIG_TABLE_NAME .' WHERE `'.CPABC_TDEAPP_CONFIG_ID.'`='.CP_CALENDAR_ID); 
 
 
-if ( 'POST' == $_SERVER['REQUEST_METHOD'] && isset( $_POST['cpabc_appointments_post_options'] ) )
+if ( 
+    ('POST' == $_SERVER['REQUEST_METHOD'] && isset( $_POST['cpabc_appointments_post_options'] ) ) 
+    || ( isset( $_GET['settings-updated'] ) && true == $_GET['settings-updated'] )
+  ) {
     echo "<div id='setting-error-settings_updated' class='updated settings-error'> <p><strong>Settings saved.</strong></p></div>";
-
+}
 $current_user = wp_get_current_user();
 
 if (cpabc_appointment_is_administrator() || $mycalendarrows[0]->conwer == $current_user->ID) { 
@@ -26,7 +29,7 @@ if (cpabc_appointment_is_administrator() || $mycalendarrows[0]->conwer == $curre
 
 <input type="button" name="backbtn" value="Back to items list..." onclick="document.location='admin.php?page=cpabc_appointments';">
 
-<form method="post" name="dexconfigofrm" action=""> 
+<form method="post" name="dexconfigofrm" action="options.php"> 
 <input name="cpabc_appointments_post_options" type="hidden" id="1" />
 <input name="cpabc_item" type="hidden" value="<?php echo intval($_GET["cal"]); ?>" />
    
@@ -393,7 +396,13 @@ if (cpabc_appointment_is_administrator() || $mycalendarrows[0]->conwer == $curre
    which has been added to your Upload/Insert Menu, just below the title of your Post/Page.
    <br /><br />
   </div>
-</div>   
+</div> 
+
+<?php 
+settings_fields('cpabc_single_cal_extra');
+do_settings_sections('cpabc_single_calendar_extra'); 
+
+?>  
 
   
 </div> 
@@ -402,7 +411,7 @@ if (cpabc_appointment_is_administrator() || $mycalendarrows[0]->conwer == $curre
 <p class="submit"><input type="submit" name="submit" id="submit" class="button-primary" value="Save Changes"  /></p>
 
 
-[<a href="http://wordpress.dwbooster.com/contact-us" target="_blank">Request Custom Modifications</a>] | [<a href="http://wordpress.dwbooster.com/calendars/appointment-booking-calendar" target="_blank">Help</a>]
+[<a href="http://wordpress.dwbooster.com/calendars/appointment-booking-calendar" target="_blank">Help</a>]
 </form>
 </div>
 <script type="text/javascript">
