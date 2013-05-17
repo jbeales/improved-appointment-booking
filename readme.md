@@ -8,7 +8,7 @@
 * Properly close form elements in cpabc_scheduler
 * Improve JS form validation in cpabc_scheduler, (match E-mail better, for one)
 * Add some login or password or something to the iCal feed
-* Remove "Custom Mods" link from the calendar list page
+
 
 # Future Improvements
 

@@ -170,6 +170,6 @@ if ($message) echo "<div id='setting-error-settings_updated' class='updated sett
 </div> 
 
 
-[<a href="http://wordpress.dwbooster.com/contact-us" target="_blank">Request Custom Modifications</a>] | [<a href="http://wordpress.dwbooster.com/calendars/appointment-booking-calendar" target="_blank">Help</a>]
+[<a href="http://wordpress.dwbooster.com/calendars/appointment-booking-calendar" target="_blank">Help</a>]
 </form>
 </div>
