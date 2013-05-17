@@ -671,7 +671,7 @@ function cpabc_appointments_check_posted_data()
             ($coupon?"\nCoupon code:".$coupon->code.$discount_note."\n":"").
     "*-*\n";
 
-    $buffer = apply_filters('cpabc_appointment_buffered_data');
+    $buffer = apply_filters('cpabc_appointment_buffered_data', $buffer);
 
 
 
@@ -909,7 +909,6 @@ function cpabc_appointments_save_options()
     $sql = "ALTER TABLE  `".CPABC_APPOINTMENTS_CONFIG_TABLE_NAME."` ADD `reminder_content` text DEFAULT '' NOT NULL AFTER  `timeWorkingDates6`;"; $wpdb->query($sql);
 
     $sql = "ALTER TABLE  `".CPABC_TDEAPP_CALENDAR_DATA_TABLE."` ADD `reminder` VARCHAR(1) DEFAULT '' NOT NULL;"; $wpdb->query($sql);
-
 
     $data = array(
          'calendar_language' => $_POST["calendar_language"],
@@ -1205,6 +1204,7 @@ class CPABC_App_Widget extends WP_Widget
 
 }
 add_action( 'widgets_init', create_function('', 'return register_widget("CPABC_App_Widget");') );
+
 
 
 ?>
