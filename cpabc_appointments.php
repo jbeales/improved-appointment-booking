@@ -1279,9 +1279,32 @@ function cpabc_get_availability_on($date) {
     }
 
     return $availability;
-
-
 }
+
+
+/**
+ * Checks to see if there's an appointment available at the time specified by 
+ * $desiredtime.
+ * @param  int $desiredtime A unix timestamp for when we would like the 
+ *                          appointment to start.
+ * @return bool              True if an appointment is available, false if not.
+ */
+function cpabc_appointment_is_available_at( $desiredtime ) {
+
+    $availability = cpabc_get_availability_on( $desiredtime );
+
+    $desiredtime = new DateTime( $desiredtime, new DateTimeZone( get_option( 'timezone_string' ) ));
+
+    $desired_time_key = $desiredtime->format('G') . intval( $desiredtime->format( 'i' ) );
+
+    if( isset( $availability[ $desired_time_key ] ) && $availability[ $desired_time_key ] > 0 ) {
+        return true;
+    }
+
+    return false;
+}
+
+
 
 
 // WIDGET CODE BELOW
