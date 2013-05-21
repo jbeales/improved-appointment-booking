@@ -1179,15 +1179,16 @@ function cpabc_appointment_is_administrator()
  * @return array        An associative array of appointment times and how many 
  *                      slots are available at that time.
  *
- *                      eg. array ( 8:10 => 2, 11:30 => 1, 14:5:3 )
+ *                      eg. array ( 8:10 => 2, 11:30 => 1, 14:5 => 3 )
  *                      Note: Neither hours nor minutes have leading zeros.
  */
 function cpabc_get_availability_on($date) {
 
     // @TODO: Make this per-calendar? Right now this is handled by the calendar
-    // @TODO: Cache this?
-    // 
     // ID set in cpabc_get_option();
+    // @TODO: Cache this?
+    // @TODO: Refactor this into several smaller functions
+
 
     // date should be a unix timestamp?
     $tz = new DateTimeZone( get_option( 'timezone_string' ) );
