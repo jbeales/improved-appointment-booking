@@ -577,6 +577,109 @@ function cpabc_export_iCal() {
 }
 
 
+/**
+ * Saves appointment booking info into the initial calendars_data table. Once 
+ * saved here a user can go on to pay for their appointment if required.
+ * 
+ * @param  array  $apt_data An associative array of appointment data. This would
+ *                          be the $_POST data passed by the booking form. 
+ * @return int              The auto_increment ID of this item in the 
+ *                          calendars_data table.
+ */
+function cpabc_tentatively_book_appointment( $apt_data ) {
+
+    // @TODO: Check to see if there's actually an appointment available at this time.
+
+    $selectedCalendar = $apt_data["cpabc_item"];
+
+    $apt_data["dateAndTime"] =  $apt_data["selYearcal" . $selectedCalendar ] . "-" . $apt_data["selMonthcal" . $selectedCalendar ] . "-" . $apt_data["selDaycal" . $selectedCalendar ] . " " . $apt_data["selHourcal" . $selectedCalendar ] . ":" . $apt_data["selMinutecal" . $selectedCalendar ];
+
+    $military_time = cpabc_get_option( 'calendar_militarytime', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_MILITARYTIME );
+    if ( cpabc_get_option( 'calendar_militarytime', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_MILITARYTIME ) == '0' ) {
+        $format = "g:i A"; 
+    } else {
+        $format = "H:i";
+    }
+    if ( cpabc_get_option( 'calendar_dateformat', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_DATEFORMAT ) == '0' ) {
+        $format = "m/d/Y ".$format;
+    } else {
+        $format = "d/m/Y ".$format;  
+    } 
+
+    $apt_data["Date"] = date( $format, strtotime( $apt_data["dateAndTime"] ) );
+
+    $services_formatted = explode( "|", $apt_data["cpabc_services"] );
+
+    $price = ( $apt_data["cpabc_services"] ? trim( $services_formatted[0] ): cpabc_get_option( 'request_cost', CPABC_APPOINTMENTS_DEFAULT_COST ) );
+
+    $discount_note = "";
+    $coupon = false;
+    $codes = $wpdb->get_results( 
+        $wpdb->prepare(
+            'SELECT * FROM  ' . CPABC_APPOINTMENTS_DISCOUNT_CODES_TABLE_NAME . ' WHERE code = %s AND expires >= %s AND cal_id = %d',
+            $apt_data['cpabc_couponcode'],
+            date('Y-m-d') . ' 00:00:00',
+            CP_CALENDAR_ID
+        )
+    );
+
+    if ( count( $codes ) ) {
+        $coupon = $codes[0];
+        $price = number_format( floatval( $price ) - $price * $coupon->discount / 100, 2 );
+        $discount_note = " (" . $coupon->discount . "% discount applied)";
+    }
+
+
+    $buffer = $apt_data["selYearcal".$selectedCalendar].",".$apt_data["selMonthcal".$selectedCalendar].",".$apt_data["selDaycal".$selectedCalendar]."\n".
+    $apt_data["selHourcal".$selectedCalendar].":".( $apt_data["selMinutecal".$selectedCalendar] <10 ? "0" : "").$apt_data["selMinutecal".$selectedCalendar]."\n".
+    "Name: ".$apt_data["cpabc_name"]."\n".
+    "Email: ".$apt_data["cpabc_email"]."\n".
+    "Phone: ".$apt_data["cpabc_phone"]."\n".
+    "Question: ".$apt_data["cpabc_question"]."\n".
+            ($apt_data["cpabc_services"]?"\nService:".trim($services_formatted[1])."\n":"").
+            ($coupon?"\nCoupon code:".$coupon->code.$discount_note."\n":"").
+    "*-*\n";
+
+    $buffer = apply_filters('cpabc_appointment_buffered_data', $buffer);
+
+
+
+    $rows_affected = $wpdb->insert( CPABC_APPOINTMENTS_TABLE_NAME, array( 'calendar' => $selectedCalendar,
+        'time' => current_time('mysql'),
+        'booked_time' => $apt_data["Date"],
+        'booked_time_unformatted' => $apt_data["dateAndTime"],
+        'name' => $apt_data["cpabc_name"],
+        'email' => $apt_data["cpabc_email"],
+        'phone' => $apt_data["cpabc_phone"],
+        'question' => $apt_data["cpabc_question"]
+           .($apt_data["cpabc_services"]?"\nService:".trim($services_formatted[1]):"")
+           .($coupon?"\nCoupon code:".$coupon->code.$discount_note:"")
+           ,
+        'buffered_date' => $buffer
+         )
+    );
+
+    if ( ! $rows_affected ) {
+        // @TODO: There's got to be a better way of handling an error
+        echo 'Error saving data! Please try again.';
+        echo '<br /><br />Error debug information: '.mysql_error();
+
+        // @TODO: WTF Is this query for?
+        $sql = "ALTER TABLE  `".$wpdb->prefix.CPABC_APPOINTMENTS_TABLE_NAME_NO_PREFIX."` ADD `booked_time_unformatted` text DEFAULT '' NOT NULL;";
+        $wpdb->query($sql);
+        exit;
+    }
+
+
+    $myrows = $wpdb->get_results( "SELECT MAX(id) as max_id FROM ".CPABC_APPOINTMENTS_TABLE_NAME );
+
+    $item_number = $wpdb->insert_id;
+
+    return $item_number;
+}
+
+
+
 /* hook for checking posted data for the admin area */
 add_action( 'init', 'cpabc_appointments_check_posted_data', 11 );
 
@@ -637,82 +740,7 @@ function cpabc_appointments_check_posted_data()
 
     $_SESSION['rand_code'] = '';
 
-    $selectedCalendar = $_POST["cpabc_item"];
-
-    $_POST["dateAndTime"] =  $_POST["selYearcal".$selectedCalendar]."-".$_POST["selMonthcal".$selectedCalendar]."-".$_POST["selDaycal".$selectedCalendar]." ".$_POST["selHourcal".$selectedCalendar].":".$_POST["selMinutecal".$selectedCalendar];
-
-    $military_time = cpabc_get_option( 'calendar_militarytime', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_MILITARYTIME );
-    if ( cpabc_get_option( 'calendar_militarytime', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_MILITARYTIME ) == '0' ) {
-        $format = "g:i A"; 
-    } else {
-        $format = "H:i";
-    }
-    if ( cpabc_get_option( 'calendar_dateformat', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_DATEFORMAT ) == '0' ) {
-        $format = "m/d/Y ".$format;
-    } else {
-        $format = "d/m/Y ".$format;  
-    } 
-
-    $_POST["Date"] = date( $format, strtotime( $_POST["dateAndTime"] ) );
-
-    $services_formatted = explode( "|", $_POST["cpabc_services"] );
-
-    $price = ($_POST["cpabc_services"]?trim($services_formatted[0]):cpabc_get_option('request_cost', CPABC_APPOINTMENTS_DEFAULT_COST));
-
-    $discount_note = "";
-    $coupon = false;
-    $codes = $wpdb->get_results( "SELECT * FROM ".CPABC_APPOINTMENTS_DISCOUNT_CODES_TABLE_NAME." WHERE code='".$wpdb->escape($_POST["cpabc_couponcode"])."' AND expires>='".date("Y-m-d")." 00:00:00' AND `cal_id`=".CP_CALENDAR_ID);
-    if (count($codes))
-    {
-        $coupon = $codes[0];
-        $price = number_format (floatval ($price) - $price*$coupon->discount/100,2);
-        $discount_note = " (".$coupon->discount."% discount applied)";
-    }
-
-
-    $buffer = $_POST["selYearcal".$selectedCalendar].",".$_POST["selMonthcal".$selectedCalendar].",".$_POST["selDaycal".$selectedCalendar]."\n".
-    $_POST["selHourcal".$selectedCalendar].":".($_POST["selMinutecal".$selectedCalendar]<10?"0":"").$_POST["selMinutecal".$selectedCalendar]."\n".
-    "Name: ".$_POST["cpabc_name"]."\n".
-    "Email: ".$_POST["cpabc_email"]."\n".
-    "Phone: ".$_POST["cpabc_phone"]."\n".
-    "Question: ".$_POST["cpabc_question"]."\n".
-            ($_POST["cpabc_services"]?"\nService:".trim($services_formatted[1])."\n":"").
-            ($coupon?"\nCoupon code:".$coupon->code.$discount_note."\n":"").
-    "*-*\n";
-
-    $buffer = apply_filters('cpabc_appointment_buffered_data', $buffer);
-
-
-
-    $rows_affected = $wpdb->insert( CPABC_APPOINTMENTS_TABLE_NAME, array( 'calendar' => $selectedCalendar,
-                                                                        'time' => current_time('mysql'),
-                                                                        'booked_time' => $_POST["Date"],
-                                                                        'booked_time_unformatted' => $_POST["dateAndTime"],
-                                                                        'name' => $_POST["cpabc_name"],
-                                                                        'email' => $_POST["cpabc_email"],
-                                                                        'phone' => $_POST["cpabc_phone"],
-                                                                        'question' => $_POST["cpabc_question"]
-                                                                           .($_POST["cpabc_services"]?"\nService:".trim($services_formatted[1]):"")
-                                                                           .($coupon?"\nCoupon code:".$coupon->code.$discount_note:"")
-                                                                           ,
-                                                                        'buffered_date' => $buffer
-                                                                         ) );
-    if (!$rows_affected)
-    {
-        echo 'Error saving data! Please try again.';
-        echo '<br /><br />Error debug information: '.mysql_error();
-
-        // @TODO: WTF Is this query for?
-        $sql = "ALTER TABLE  `".$wpdb->prefix.CPABC_APPOINTMENTS_TABLE_NAME_NO_PREFIX."` ADD `booked_time_unformatted` text DEFAULT '' NOT NULL;";
-        $wpdb->query($sql);
-        exit;
-    }
-
-
-    $myrows = $wpdb->get_results( "SELECT MAX(id) as max_id FROM ".CPABC_APPOINTMENTS_TABLE_NAME );
-
- 	// save data here
-    $item_number = $myrows[0]->max_id;
+    $item_number = cpabc_tentatively_book_appointment( $_POST );
 
     if ( floatval( $price ) > 0 && cpabc_get_option( 'enable_paypal', CPABC_APPOINTMENTS_DEFAULT_ENABLE_PAYPAL ) )
     {
