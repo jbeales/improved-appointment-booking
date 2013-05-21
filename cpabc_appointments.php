@@ -1172,13 +1172,6 @@ function cpabc_appointment_is_administrator()
 }
 
 
-function cpabc_is_date_restricted($datetime) {
-
-
-
-}
-
-
 
 /**
  * Gets the availability on the date specified by $date
