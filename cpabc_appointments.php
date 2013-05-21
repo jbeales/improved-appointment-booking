@@ -578,8 +578,6 @@ function cpabc_export_iCal() {
 
 
 /* hook for checking posted data for the admin area */
-
-
 add_action( 'init', 'cpabc_appointments_check_posted_data', 11 );
 
 function cpabc_appointments_check_posted_data()
@@ -643,12 +641,21 @@ function cpabc_appointments_check_posted_data()
 
     $_POST["dateAndTime"] =  $_POST["selYearcal".$selectedCalendar]."-".$_POST["selMonthcal".$selectedCalendar]."-".$_POST["selDaycal".$selectedCalendar]." ".$_POST["selHourcal".$selectedCalendar].":".$_POST["selMinutecal".$selectedCalendar];
 
-    $military_time = cpabc_get_option('calendar_militarytime', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_MILITARYTIME);
-    if (cpabc_get_option('calendar_militarytime', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_MILITARYTIME) == '0') $format = "g:i A"; else $format = "H:i";
-    if (cpabc_get_option('calendar_dateformat', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_DATEFORMAT) == '0') $format = "m/d/Y ".$format; else $format = "d/m/Y ".$format;
-    $_POST["Date"] = date($format,strtotime($_POST["dateAndTime"]));
+    $military_time = cpabc_get_option( 'calendar_militarytime', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_MILITARYTIME );
+    if ( cpabc_get_option( 'calendar_militarytime', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_MILITARYTIME ) == '0' ) {
+        $format = "g:i A"; 
+    } else {
+        $format = "H:i";
+    }
+    if ( cpabc_get_option( 'calendar_dateformat', CPABC_APPOINTMENTS_DEFAULT_CALENDAR_DATEFORMAT ) == '0' ) {
+        $format = "m/d/Y ".$format;
+    } else {
+        $format = "d/m/Y ".$format;  
+    } 
 
-    $services_formatted = explode("|",$_POST["cpabc_services"]);
+    $_POST["Date"] = date( $format, strtotime( $_POST["dateAndTime"] ) );
+
+    $services_formatted = explode( "|", $_POST["cpabc_services"] );
 
     $price = ($_POST["cpabc_services"]?trim($services_formatted[0]):cpabc_get_option('request_cost', CPABC_APPOINTMENTS_DEFAULT_COST));
 
@@ -694,7 +701,10 @@ function cpabc_appointments_check_posted_data()
     {
         echo 'Error saving data! Please try again.';
         echo '<br /><br />Error debug information: '.mysql_error();
-        $sql = "ALTER TABLE  `".$wpdb->prefix.CPABC_APPOINTMENTS_TABLE_NAME_NO_PREFIX."` ADD `booked_time_unformatted` text DEFAULT '' NOT NULL;"; $wpdb->query($sql);
+
+        // @TODO: WTF Is this query for?
+        $sql = "ALTER TABLE  `".$wpdb->prefix.CPABC_APPOINTMENTS_TABLE_NAME_NO_PREFIX."` ADD `booked_time_unformatted` text DEFAULT '' NOT NULL;";
+        $wpdb->query($sql);
         exit;
     }
 
@@ -704,7 +714,7 @@ function cpabc_appointments_check_posted_data()
  	// save data here
     $item_number = $myrows[0]->max_id;
 
-    if (floatval($price) > 0 && cpabc_get_option('enable_paypal',CPABC_APPOINTMENTS_DEFAULT_ENABLE_PAYPAL))
+    if ( floatval( $price ) > 0 && cpabc_get_option( 'enable_paypal', CPABC_APPOINTMENTS_DEFAULT_ENABLE_PAYPAL ) )
     {
 ?>
 <html>
@@ -738,12 +748,11 @@ document.ppform3.submit();
     }
     else
     {
-        cpabc_process_ready_to_go_appointment($item_number);
+        cpabc_process_ready_to_go_appointment( $item_number );
 
-        header("Location: ".cpabc_get_option('url_ok', CPABC_APPOINTMENTS_DEFAULT_OK_URL));
+        header( "Location: ".cpabc_get_option( 'url_ok', CPABC_APPOINTMENTS_DEFAULT_OK_URL ) );
         exit;
     }
-
 }
 
 

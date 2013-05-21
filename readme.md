@@ -22,3 +22,4 @@
 # Future Improvements
 
 * Show a warning when an admin blocks off/restricts a date that already has appointments booked.
+* Stop relying on a CP_CALENDAR_ID constant so that we can do operations on multiple calendars in the future.
