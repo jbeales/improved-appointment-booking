@@ -1212,14 +1212,14 @@ function cpabc_appointment_is_administrator()
 
 /**
  * Gets the availability on the date specified by $date
- * @param  int $date    A unix timestamp on the date you're interested in.
+ * @param  int $timestamp    A unix timestamp on the date you're interested in.
  * @return array        An associative array of appointment times and how many 
  *                      slots are available at that time.
  *
  *                      eg. array ( 8:10 => 2, 11:30 => 1, 14:5 => 3 )
  *                      Note: Neither hours nor minutes have leading zeros.
  */
-function cpabc_get_availability_on($date) {
+function cpabc_get_availability_on($timestamp) {
 
     // @TODO: Make this per-calendar? Right now this is handled by the calendar
     // ID set in cpabc_get_option();
@@ -1229,9 +1229,14 @@ function cpabc_get_availability_on($date) {
 
     // date should be a unix timestamp?
     $tz = new DateTimeZone( get_option( 'timezone_string' ) );
-    $date = new DateTime( $date, $tz );
+    $date = new DateTime();
+    $date->setTimestamp( $timestamp );
+    $date->setTimezone( $tz );
+
     $date_str = $date->format( 'n/j/Y' );
-    $now = new DateTime( time(), $tz );
+    $now = new DateTime();
+    $now->setTimestamp( time() );
+    $now->setTimezone( $tz );
 
     // is this date in the past?
     if($date < $now) {
@@ -1322,15 +1327,17 @@ function cpabc_get_availability_on($date) {
 /**
  * Checks to see if there's an appointment available at the time specified by 
  * $desiredtime.
- * @param  int $desiredtime A unix timestamp for when we would like the 
+ * @param  int $desiredtimestamp A unix timestamp for when we would like the 
  *                          appointment to start.
  * @return bool              True if an appointment is available, false if not.
  */
-function cpabc_appointment_is_available_at( $desiredtime ) {
+function cpabc_appointment_is_available_at( $desiredtimestamp ) {
 
-    $availability = cpabc_get_availability_on( $desiredtime );
+    $availability = cpabc_get_availability_on( $desiredtimestamp );
 
-    $desiredtime = new DateTime( $desiredtime, new DateTimeZone( get_option( 'timezone_string' ) ));
+    $desiredtime = new DateTime();
+    $desiredtime->setTimestamp( $desiredtimestamp );
+    $desiredtime->setTimezone( new DateTimeZone( get_option( 'timezone_string' ) ) );
 
     $desired_time_key = $desiredtime->format('G') . intval( $desiredtime->format( 'i' ) );
 
