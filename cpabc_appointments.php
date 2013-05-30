@@ -1118,14 +1118,13 @@ function cpabc_appointments_calendar_update2() {
     header("Pragma: no-cache");
     if ( $user_ID )
     {
-        if ($_GET["act"]=='del')
+        if ( 'del' == $_GET["act"] )
         {
             $calid = str_replace  (CPABC_TDEAPP_CAL_PREFIX, "",$_GET["id"]);
-            $wpdb->query("delete from ".CPABC_TDEAPP_CALENDAR_DATA_TABLE." where ".CPABC_TDEAPP_DATA_IDCALENDAR."=".$calid." and ".CPABC_TDEAPP_DATA_ID."=".$_POST["sqlId"]);
+            $wpdb->query( $wpdb->prepare( "DELETE FROM ".CPABC_TDEAPP_CALENDAR_DATA_TABLE." WHERE ".CPABC_TDEAPP_DATA_IDCALENDAR."=%d AND ".CPABC_TDEAPP_DATA_ID."=%d", $calid, $_POST["sqlId"] ) );
+            $wpdb->query( $wpdb->prepare( "DELETE FROM ".CPABC_APPOINTMENTS_TABLE_NAME." WHERE calendar=%d AND id=%d", $calid, $_POST['sqlId'] ) );
 
-        }
-        else if ($_GET["act"]=='edit')
-        {
+        } else if ($_GET["act"]=='edit') {
             $calid = str_replace  (CPABC_TDEAPP_CAL_PREFIX, "",$_GET["id"]);
             $data = explode("\n", $_POST["appoiments"]);
             $d1 =  explode(",", $data[0]);
@@ -1140,9 +1139,7 @@ function cpabc_appointments_calendar_update2() {
                     $description .= "\n";
             }
             $wpdb->query("update  ".CPABC_TDEAPP_CALENDAR_DATA_TABLE." set ".CPABC_TDEAPP_DATA_DATETIME."='".$datetime."',".CPABC_TDEAPP_DATA_TITLE."='".$wpdb->escape($title)."',".CPABC_TDEAPP_DATA_DESCRIPTION."='".$wpdb->escape($description)."'  where ".CPABC_TDEAPP_DATA_IDCALENDAR."=".$calid." and ".CPABC_TDEAPP_DATA_ID."=".$_POST["sqlId"]);
-        }
-        else if ($_GET["act"]=='add')
-        {
+        } else if ($_GET["act"]=='add') {
             $calid = str_replace  (CPABC_TDEAPP_CAL_PREFIX, "",$_GET["id"]);
             $data = explode("\n", $_POST["appoiments"]);
             $d1 =  explode(",", $data[0]);
