@@ -1186,9 +1186,9 @@ function cpabc_appointment_get_FULL_site_url()
 $cpabc_option_buffered_item = false;
 $cpabc_option_buffered_id = -1;
 
-function cpabc_get_option ($field, $default_value)
+function cpabc_get_option ($field, $default_value = NULL)
 {
-    global $wpdb, $cpabc_option_buffered_item;
+    global $wpdb, $cpabc_option_buffered_item, $cpabc_option_buffered_id;
     if ($cpabc_option_buffered_id == CP_CALENDAR_ID)
         $value = $cpabc_option_buffered_item->$field;
     else
