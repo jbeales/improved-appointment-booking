@@ -1258,10 +1258,12 @@ function cpabc_get_availability_on($timestamp) {
     $weekday = $date->format( 'w' ); // weekday, 0-6
     $workdays = cpabc_get_option( 'workingDates' );
     $workdays = explode(',', $workdays );
+
     if( ! in_array( $weekday, $workdays ) ) {
         return false;
     }
 
+   
     // is this date before the min date?
     $mindate = cpabc_get_option( 'calendar_mindate' ); // string, could be anything.
     if( ! empty( $mindate ) ) {
@@ -1272,6 +1274,8 @@ function cpabc_get_availability_on($timestamp) {
             return false;
         }
     }
+
+  
 
     // is this date after the max date?
     $maxdate = cpabc_get_option( 'calendar_maxdate' );
@@ -1311,6 +1315,7 @@ function cpabc_get_availability_on($timestamp) {
             $date->format( 'Y-m-d' )
         )
     );
+
 
     foreach( $appointments as $appointment ) {
         $appointment_ts = mysql2date('U', $appointment->datatime);
