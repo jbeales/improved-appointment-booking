@@ -1257,7 +1257,7 @@ function cpabc_get_availability_on($timestamp) {
     $weekday = $date->format( 'w' ); // weekday, 0-6
     $workdays = cpabc_get_option( 'workingDates' );
     $workdays = explode(',', $workdays );
-    if( ! in_array( $weekkday, $workdays ) ) {
+    if( ! in_array( $weekday, $workdays ) ) {
         return false;
     }
 
