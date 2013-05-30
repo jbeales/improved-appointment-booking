@@ -1287,7 +1287,7 @@ function cpabc_get_availability_on($timestamp) {
 
     // well then, let's compute the availability
     // @TODO: See if this is affected by changing the week start setting
-    $availablity_src = cpabc_get_option( 'timeWorkingDates' . $weekday ); // eg. timeWorkingDates2 (Tuesday)
+    $availability_src = cpabc_get_option( 'timeWorkingDates' . $weekday ); // eg. timeWorkingDates2 (Tuesday)
 
     // make an array of appointment times & capacities, then decrement 
     // capacities based on already-booked appointments
