@@ -1191,10 +1191,9 @@ $cpabc_option_buffered_id = -1;
 function cpabc_get_option ($field, $default_value = NULL)
 {
     global $wpdb, $cpabc_option_buffered_item, $cpabc_option_buffered_id;
-    if ($cpabc_option_buffered_id == CP_CALENDAR_ID)
+    if ( CP_CALENDAR_ID == $cpabc_option_buffered_id ) {
         $value = $cpabc_option_buffered_item->$field;
-    else
-    {
+    } else {
        $myrows = $wpdb->get_results( "SELECT * FROM ".CPABC_APPOINTMENTS_CONFIG_TABLE_NAME." WHERE id=".CP_CALENDAR_ID );
        $value = $myrows[0]->$field;
        $cpabc_option_buffered_item = $myrows[0];
