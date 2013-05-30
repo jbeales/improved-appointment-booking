@@ -1340,7 +1340,7 @@ function cpabc_appointment_is_available_at( $desiredtimestamp ) {
     $desiredtime->setTimestamp( $desiredtimestamp );
     $desiredtime->setTimezone( new DateTimeZone( get_option( 'timezone_string' ) ) );
 
-    $desired_time_key = $desiredtime->format('G') . intval( $desiredtime->format( 'i' ) );
+    $desired_time_key = $desiredtime->format('G') . ':' . intval( $desiredtime->format( 'i' ) );
 
     if( isset( $availability[ $desired_time_key ] ) && $availability[ $desired_time_key ] > 0 ) {
         return true;
