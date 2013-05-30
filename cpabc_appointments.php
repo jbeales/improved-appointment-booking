@@ -1293,7 +1293,7 @@ function cpabc_get_availability_on($timestamp) {
     // capacities based on already-booked appointments
     $availability_src = explode( ',', $availability_src );
     $availability = array();
-    foreach( $availability as $block ) {
+    foreach( $availability_src as $block ) {
         $divider = strrpos( $block, ':' );
         $time = substr( $block, 0, $divider );
         $capacity = intval( substr( $block, $divider + 1) );
