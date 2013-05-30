@@ -590,6 +590,9 @@ function cpabc_tentatively_book_appointment( $apt_data ) {
 
     // @TODO: Check to see if there's actually an appointment available at this time.
 
+
+    global $wpdb;
+
     $selectedCalendar = $apt_data["cpabc_item"];
 
     $apt_data["dateAndTime"] =  $apt_data["selYearcal" . $selectedCalendar ] . "-" . $apt_data["selMonthcal" . $selectedCalendar ] . "-" . $apt_data["selDaycal" . $selectedCalendar ] . " " . $apt_data["selHourcal" . $selectedCalendar ] . ":" . $apt_data["selMinutecal" . $selectedCalendar ];
