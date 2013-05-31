@@ -683,6 +683,16 @@ function cpabc_tentatively_book_appointment( $apt_data ) {
 
 
 
+function cpabc_delete_appointment($appointment_id) {
+
+    global $wpdb;
+
+    $wpdb->query( $wpdb->prepare( "DELETE FROM ".CPABC_TDEAPP_CALENDAR_DATA_TABLE." WHERE ".CPABC_TDEAPP_DATA_ID."=%d", $_POST["sqlId"] ) );
+    $wpdb->query( $wpdb->prepare( "DELETE FROM ".CPABC_APPOINTMENTS_TABLE_NAME." WHERE AND id=%d", $_POST['sqlId'] ) );
+
+}
+
+
 /* hook for checking posted data for the admin area */
 add_action( 'init', 'cpabc_appointments_check_posted_data', 11 );
 
@@ -1122,9 +1132,9 @@ function cpabc_appointments_calendar_update2() {
     {
         if ( 'del' == $_GET["act"] )
         {
-            $calid = str_replace  (CPABC_TDEAPP_CAL_PREFIX, "",$_GET["id"]);
-            $wpdb->query( $wpdb->prepare( "DELETE FROM ".CPABC_TDEAPP_CALENDAR_DATA_TABLE." WHERE ".CPABC_TDEAPP_DATA_IDCALENDAR."=%d AND ".CPABC_TDEAPP_DATA_ID."=%d", $calid, $_POST["sqlId"] ) );
-            $wpdb->query( $wpdb->prepare( "DELETE FROM ".CPABC_APPOINTMENTS_TABLE_NAME." WHERE calendar=%d AND id=%d", $calid, $_POST['sqlId'] ) );
+            $calid = str_replace  ( CPABC_TDEAPP_CAL_PREFIX, "", $_GET["id"] );
+
+            cpabc_delete_appointment( $_POST["sqlId"] );
 
         } else if ($_GET["act"]=='edit') {
             $calid = str_replace  (CPABC_TDEAPP_CAL_PREFIX, "",$_GET["id"]);
