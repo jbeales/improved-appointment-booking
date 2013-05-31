@@ -935,18 +935,21 @@ function cpabc_process_ready_to_go_appointment($itemnumber, $payer_email = "")
                 "X-Mailer: PHP/" . phpversion());
         }
         
-   if ($reminder_timeline > date("Y-m-d H:i:s", strtotime($myrows[0]->booked_time_unformatted)))
+    if ($reminder_timeline > date("Y-m-d H:i:s", strtotime($myrows[0]->booked_time_unformatted))) {
        $reminder = '1';
-   else
-       $reminder = '';          
-   $rows_affected = $wpdb->insert( CPABC_TDEAPP_CALENDAR_DATA_TABLE, array(
-                                                                        'id' => $myrows[0]->id,
-                                                                        'appointment_calendar_id' => $myrows[0]->calendar,
-                                                                        'datatime' => date("Y-m-d H:i:s", strtotime($myrows[0]->booked_time_unformatted)),
-                                                                        'title' => $myrows[0]->email,
-                                                                        'reminder' => $reminder,
-                                                                        'description' => str_replace("\n","<br />", $information)
-                                                                    ) );
+    } else {
+       $reminder = '';
+    }
+    
+    $rows_affected = $wpdb->insert( CPABC_TDEAPP_CALENDAR_DATA_TABLE, array(
+            'id' => $myrows[0]->id,
+            'appointment_calendar_id' => $myrows[0]->calendar,
+            'datatime' => date("Y-m-d H:i:s", strtotime($myrows[0]->booked_time_unformatted)),
+            'title' => $myrows[0]->email,
+            'reminder' => $reminder,
+            'description' => str_replace("\n","<br />", $information)
+        )
+    );
 
 }
 
