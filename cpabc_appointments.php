@@ -646,21 +646,70 @@ function cpabc_tentatively_book_appointment( $apt_data ) {
     $buffer = apply_filters('cpabc_appointment_buffered_data', $buffer);
 
 
+    if( isset( $apt_data['id'] ) && ! empty( $apt_data['id'] ) ) {
+        $rows_affected = $wpdb->update(
+            CPABC_APPOINTMENTS_TABLE_NAME,
+            array( 
+                'time' => current_time('mysql'),
+                'booked_time' => $apt_data["Date"],
+                'booked_time_unformatted' => $apt_data["dateAndTime"],
+                'name' => $apt_data["cpabc_name"],
+                'email' => $apt_data["cpabc_email"],
+                'phone' => $apt_data["cpabc_phone"],
+                'question' => $apt_data["cpabc_question"]
+                   .($apt_data["cpabc_services"]?"\nService:".trim($services_formatted[1]):"")
+                   .($coupon?"\nCoupon code:".$coupon->code.$discount_note:"")
+                   ,
+                'buffered_date' => $buffer
+             ),
 
-    $rows_affected = $wpdb->insert( CPABC_APPOINTMENTS_TABLE_NAME, array( 'calendar' => $selectedCalendar,
-        'time' => current_time('mysql'),
-        'booked_time' => $apt_data["Date"],
-        'booked_time_unformatted' => $apt_data["dateAndTime"],
-        'name' => $apt_data["cpabc_name"],
-        'email' => $apt_data["cpabc_email"],
-        'phone' => $apt_data["cpabc_phone"],
-        'question' => $apt_data["cpabc_question"]
-           .($apt_data["cpabc_services"]?"\nService:".trim($services_formatted[1]):"")
-           .($coupon?"\nCoupon code:".$coupon->code.$discount_note:"")
-           ,
-        'buffered_date' => $buffer
-         )
-    );
+            // where
+            array(
+                'id' => $apt_data['id']
+            ),
+            // formats
+            array(
+                '%s',
+                '%s',
+                '%s',
+                '%s',
+                '%s',
+                '%s',
+                '%s',
+                '%s'
+            ),
+
+            // where format
+            array(
+                '%d'
+            )
+
+        );
+
+        $item_number = $apt_data['id'];
+
+    } else {
+        $rows_affected = $wpdb->insert( CPABC_APPOINTMENTS_TABLE_NAME, array( 'calendar' => $selectedCalendar,
+            'time' => current_time('mysql'),
+            'booked_time' => $apt_data["Date"],
+            'booked_time_unformatted' => $apt_data["dateAndTime"],
+            'name' => $apt_data["cpabc_name"],
+            'email' => $apt_data["cpabc_email"],
+            'phone' => $apt_data["cpabc_phone"],
+            'question' => $apt_data["cpabc_question"]
+               .($apt_data["cpabc_services"]?"\nService:".trim($services_formatted[1]):"")
+               .($coupon?"\nCoupon code:".$coupon->code.$discount_note:"")
+               ,
+            'buffered_date' => $buffer
+             )
+        );
+
+        if( $rows_affected ) {
+             $item_number = $wpdb->insert_id;
+        }
+    }
+
+    
 
     if ( ! $rows_affected ) {
         // @TODO: There's got to be a better way of handling an error
@@ -673,10 +722,10 @@ function cpabc_tentatively_book_appointment( $apt_data ) {
         exit;
     }
 
+    return $item_number;
+}
 
-    $myrows = $wpdb->get_results( "SELECT MAX(id) as max_id FROM ".CPABC_APPOINTMENTS_TABLE_NAME );
 
-    $item_number = $wpdb->insert_id;
 
     return $item_number;
 }
