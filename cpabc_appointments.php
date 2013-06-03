@@ -726,11 +726,87 @@ function cpabc_tentatively_book_appointment( $apt_data ) {
 }
 
 
+function cpabc_create_appointment( $apt_data ) {
 
-    return $item_number;
+    $calendar_id = $apt_data['calendar'];
+
+    $raw_appointment = array(
+        'cpabc_item'                  => $calendar_id,
+        'selYearcal' . $calendar_id   => $apt_data['datetimeobj']->format( 'Y' ),
+        'selMonthcal' . $calendar_id  => $apt_data['datetimeobj']->format( 'n' ),
+        'selDaycal' . $calendar_id    => $apt_data['datetimeobj']->format( 'j' ),
+        'selHourcal' . $calendar_id   => $apt_data['datetimeobj']->format( 'G' ),
+        'selMinutecal' . $calendar_id => intval($apt_data['datetimeobj']->format( 'i' )),
+        'cpabc_couponcode'            => '',
+        'cpabc_services'              => '',
+        'cpabc_name'                  => '',
+        'cpabc_email'                 => $apt_data['title'],    // yeah, bizarre, but it ends up as the appointment "title"
+        'cpabc_phone'                 => '',
+        'cpabc_question'              => $apt_data['description'],
+    );
+
+    $appointment_id = cpabc_tentatively_book_appointment( $raw_appointment );
+    cpabc_process_ready_to_go_appointment( $appointment_id );
+
+    return $appointment_id;
 }
 
 
+function cpabc_edit_appointment( $apt_data ) {
+
+    /// date, time, subject/title, description are the only things provided, so I should be able to edit those.
+
+    // I have to figure out how to format the buffered data...?
+    
+    
+
+    // run everything through the appointment table.
+    $raw_appointment = array(
+        'selYearcal' . $calendar_id   => $apt_data['datetimeobj']->format( 'Y' ),
+        'selMonthcal' . $calendar_id  => $apt_data['datetimeobj']->format( 'n' ),
+        'selDaycal' . $calendar_id    => $apt_data['datetimeobj']->format( 'j' ),
+        'selHourcal' . $calendar_id   => $apt_data['datetimeobj']->format( 'G' ),
+        'selMinutecal' . $calendar_id => intval( $apt_data['datetimeobj']->format( 'i' ) ),
+        'cpabc_couponcode'            => '',
+        'cpabc_services'              => '',
+        'cpabc_name'                  => '',
+        'cpabc_email'                 => $apt_data['title'],    // yeah, bizarre, but it ends up as the appointment "title"
+        'cpabc_phone'                 => '',
+        'cpabc_question'              => $apt_data['description'],
+        'id'                          => $apt_data['id'],
+
+    );
+
+    $appointment_id = cpabc_tentatively_book_appointment( $raw_appointment );
+
+
+
+
+    // update data table
+    $wpdb->update(
+        CPABC_TDEAPP_CALENDAR_DATA_TABLE,
+        array(
+            CPABC_TDEAPP_DATA_DATETIME => $apt_data['datetime'], 
+            CPABC_TDEAPP_DATA_TITLE => $apt_data['title'], 
+            CPABC_TDEAPP_DATA_DESCRIPTION => $apt_data['description']
+        ),
+
+        array(
+            CPABC_TDEAPP_DATA_ID => $apt_data['id']
+        ),
+
+        array(
+            '%s',
+            '%s',
+            '%s'
+        ),
+
+        array(
+            '%d',
+        )
+    );
+
+}
 
 function cpabc_delete_appointment($appointment_id) {
 
@@ -1202,13 +1278,35 @@ function cpabc_appointments_calendar_update2() {
                 if ($j!=count($data)-1)
                     $description .= "\n";
             }
-            $wpdb->query("update  ".CPABC_TDEAPP_CALENDAR_DATA_TABLE." set ".CPABC_TDEAPP_DATA_DATETIME."='".$datetime."',".CPABC_TDEAPP_DATA_TITLE."='".$wpdb->escape($title)."',".CPABC_TDEAPP_DATA_DESCRIPTION."='".$wpdb->escape($description)."'  where ".CPABC_TDEAPP_DATA_IDCALENDAR."=".$calid." and ".CPABC_TDEAPP_DATA_ID."=".$_POST["sqlId"]);
+
+            $start = new DateTime();
+            $start->setTimezone( new DateTimeZone( get_option( 'timezone_string' ) ) );
+            $start->setDate( $d1[0], $d1[1], $d1[2] );
+            $start->setTime( $d2[0], $d2[1] );
+
+            $apt_data = array(
+                'id' => $_POST["sqlId"],
+                'datetime' => $datetime,
+                'datetimeobj' => $start,
+                'title' => $title,
+                'description' => $description
+            );
+
+            cpabc_edit_appointment( $apt_data );
+
+            //$wpdb->query("update  ".CPABC_TDEAPP_CALENDAR_DATA_TABLE." set ".CPABC_TDEAPP_DATA_DATETIME."='".$datetime."',".CPABC_TDEAPP_DATA_TITLE."='".$wpdb->escape($title)."',".CPABC_TDEAPP_DATA_DESCRIPTION."='".$wpdb->escape($description)."'  where ".CPABC_TDEAPP_DATA_IDCALENDAR."=".$calid." and ".CPABC_TDEAPP_DATA_ID."=".$_POST["sqlId"]);
         } else if ($_GET["act"]=='add') {
             $calid = str_replace  (CPABC_TDEAPP_CAL_PREFIX, "",$_GET["id"]);
             $data = explode("\n", $_POST["appoiments"]);
             $d1 =  explode(",", $data[0]);
             $d2 =  explode(":", $data[1]);
 	        $datetime = $d1[0]."-".$d1[1]."-".$d1[2]." ".$d2[0].":".$d2[1];
+
+            $start = new DateTime();
+            $start->setTimezone( new DateTimeZone( get_option( 'timezone_string' ) ) );
+            $start->setDate( $d1[0], $d1[1], $d1[2] );
+            $start->setTime( $d2[0], $d2[1] );
+
 	        $title = $data[2];
             $description = "";
             for ($j=3;$j<count($data);$j++)
@@ -1217,8 +1315,19 @@ function cpabc_appointments_calendar_update2() {
                 if ($j!=count($data)-1)
                     $description .= "\n";
             }
-            $wpdb->query("insert into ".CPABC_TDEAPP_CALENDAR_DATA_TABLE."(".CPABC_TDEAPP_DATA_IDCALENDAR.",".CPABC_TDEAPP_DATA_DATETIME.",".CPABC_TDEAPP_DATA_TITLE.",".CPABC_TDEAPP_DATA_DESCRIPTION.") values(".$calid.",'".$datetime."','".$wpdb->escape($title)."','".$wpdb->escape($description)."') ");
-            echo  $wpdb->insert_id;
+
+
+             $apt_data = array(
+                'calendar' => $calid,
+                'datetime' => $datetime,
+                'datetimeobj' => $start,
+                'title' => $title,
+                'description' => $description
+            );
+
+            $appointment_id = cpabc_create_appointment( $apt_data );
+
+            echo  $appointment_id;
 
         }
     }
