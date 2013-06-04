@@ -119,8 +119,11 @@ for ($i=0;$i<$noise;$i++)
   imageline ( $image, $x1, $y1, mt_rand($x1-$noiselength,$x1+$noiselength), mt_rand($y1-$noiselength,$y1+$noiselength), $color);
 }  
 
-$font = dirname( CPABC_PLUGIN_FILE ) . "/catpcha/font-1.ttf"; // font
-if ($_GET["font"]) $font = dirname( CPABC_PLUGIN_FILE ) . "/captcha/".$_GET["font"];       
+$font = dirname( CPABC_PLUGIN_FILE ) . '/captcha/font-1.ttf'; // font
+if ( $_GET["font"] ) {
+  $font = dirname( CPABC_PLUGIN_FILE ) . '/captcha/'.$_GET['font'];
+}
+
 /**if (!file_exists($font))
     $font = $_SERVER["DOCUMENT_ROOT"]."/HDWFormCaptcha/".$font;
 if (!file_exists($font))
