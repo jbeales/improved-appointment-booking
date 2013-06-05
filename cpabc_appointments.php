@@ -1402,12 +1402,12 @@ function cpabc_get_availability_on($timestamp) {
     // date should be a unix timestamp?
     $tz = new DateTimeZone( get_option( 'timezone_string' ) );
     $date = new DateTime();
-    $date->setTimestamp( $timestamp );
+    _cpabc_set_timestamp_on_datetime( $date, $timestamp );
     $date->setTimezone( $tz );
 
     $date_str = $date->format( 'n/j/Y' );
     $now = new DateTime();
-    $now->setTimestamp( time() );
+    _cpabc_set_timestamp_on_datetime( $now, time() );
     $now->setTimezone( $tz );
 
     // is this date in the past?
@@ -1513,7 +1513,7 @@ function cpabc_appointment_is_available_at( $desiredtimestamp ) {
     $availability = cpabc_get_availability_on( $desiredtimestamp );
 
     $desiredtime = new DateTime();
-    $desiredtime->setTimestamp( $desiredtimestamp );
+    _cpabc_set_timestamp_on_datetime( $desiredtime, $desiredtimestamp );
     $desiredtime->setTimezone( new DateTimeZone( get_option( 'timezone_string' ) ) );
 
     $desired_time_key = $desiredtime->format('G') . ':' . intval( $desiredtime->format( 'i' ) );
@@ -1575,5 +1575,32 @@ class CPABC_App_Widget extends WP_Widget
 add_action( 'widgets_init', create_function('', 'return register_widget("CPABC_App_Widget");') );
 
 
+
+
+function _cpabc_set_timestamp_on_datetime( &$datetime, $timestamp ) {
+
+
+    if ( method_exists( $datetime, 'setTimestamp' ) ) {
+        $datetime->setTimestamp( $timestamp );
+    } else {
+        // switch to UTC for a moment
+        $current_tz = date_default_timezone_get();
+        date_default_timezone_set( 'UTC' );
+
+        $obj_current_timezone = $datetime->getTimezone();
+        $datetime->setTimezone( new DateTimeZone( 'UTC' ) );
+
+        // set the date & time
+        $datetime->setDate( date( 'Y', $timestamp ), date( 'm', $timestamp ), date( 'd', $timestamp) );
+        $datetime->setTime( date( 'H', $timestamp ), date( 'i', $timestamp ), date( 's', $timestamp ) );
+
+        // switch back to original TZ
+        if ( $obj_current_timezone ) {
+            $datetime->setTimezone( $obj_current_timezone );
+        }
+        date_default_timezone_set( $current_tz );
+    }
+
+}
 
 ?>
