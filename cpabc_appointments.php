@@ -812,8 +812,8 @@ function cpabc_delete_appointment($appointment_id) {
 
     global $wpdb;
 
-    $wpdb->query( $wpdb->prepare( "DELETE FROM ".CPABC_TDEAPP_CALENDAR_DATA_TABLE." WHERE ".CPABC_TDEAPP_DATA_ID."=%d", $_POST["sqlId"] ) );
-    $wpdb->query( $wpdb->prepare( "DELETE FROM ".CPABC_APPOINTMENTS_TABLE_NAME." WHERE AND id=%d", $_POST['sqlId'] ) );
+    $wpdb->query( $wpdb->prepare( "DELETE FROM ".CPABC_TDEAPP_CALENDAR_DATA_TABLE." WHERE ".CPABC_TDEAPP_DATA_ID."=%d", $appointment_id ) );
+    $wpdb->query( $wpdb->prepare( "DELETE FROM ".CPABC_APPOINTMENTS_TABLE_NAME." WHERE id=%d", $appointment_id ) );
 
 }
 
@@ -1142,7 +1142,7 @@ function cpabc_appointments_check_reminders() {
     global $wpdb;
     $query = "SELECT notification_from_email,reminder_subject,reminder_content,".CPABC_TDEAPP_CALENDAR_DATA_TABLE.".* FROM ".
               CPABC_TDEAPP_CALENDAR_DATA_TABLE." INNER JOIN ".CPABC_APPOINTMENTS_CONFIG_TABLE_NAME." ON ".CPABC_TDEAPP_CALENDAR_DATA_TABLE.".appointment_calendar_id=".CPABC_APPOINTMENTS_CONFIG_TABLE_NAME.".id ".
-              " WHERE enable_reminder=1 AND reminder<>'1' AND datatime<DATE_ADD(now(),INTERVAL ".reminder_hours." HOUR) AND datatime>'".date("Y-m-d H:i:s")."'";
+              " WHERE enable_reminder=1 AND reminder<>'1' AND datatime<DATE_ADD(now(),INTERVAL reminder_hours HOUR) AND datatime>'".date("Y-m-d H:i:s")."'";
     $apps = $wpdb->get_results( $query);
     foreach ($apps as $app) {
         // send email
@@ -1365,7 +1365,7 @@ function cpabc_get_option ($field, $default_value = NULL)
     if ( CP_CALENDAR_ID == $cpabc_option_buffered_id ) {
         $value = $cpabc_option_buffered_item->$field;
     } else {
-       $myrows = $wpdb->get_results( "SELECT * FROM ".CPABC_APPOINTMENTS_CONFIG_TABLE_NAME." WHERE id=".CP_CALENDAR_ID );
+       $myrows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM ".CPABC_APPOINTMENTS_CONFIG_TABLE_NAME." WHERE id=%d", CP_CALENDAR_ID ) );
        $value = $myrows[0]->$field;
        $cpabc_option_buffered_item = $myrows[0];
        $cpabc_option_buffered_id  = CP_CALENDAR_ID;
