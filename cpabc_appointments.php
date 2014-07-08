@@ -1338,19 +1338,17 @@ function cpabc_appointments_calendar_update2() {
 
 function cpabc_appointment_get_site_url()
 {
-    $url = parse_url(get_site_url());
-    $url = rtrim($url["path"],"/");
+    $url = rtrim( parse_url( get_site_url(), PHP_URL_PATH ), '/' );
     return $url;
 }
 
 
 function cpabc_appointment_get_FULL_site_url()
 {
-    $url = parse_url(get_site_url());
-    $url = rtrim($url["path"],"/");
-    $pos = strpos($url, "://");
-    if ($pos === false)
-        $url = 'http://'.$_SERVER["HTTP_HOST"].$url;
+    $url = cpabc_appointment_get_site_url();
+    $pos = strpos( $url, '://' );
+    if ( false === $pos )
+        $url = 'http://' . $_SERVER["HTTP_HOST"] . $url;
     return $url;
 }
 
